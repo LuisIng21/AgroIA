@@ -1,0 +1,40 @@
+{
+  "name": "frijolai",
+  "version": "1.0.0",
+  "description": "Sistema de control fitosanitario para frijol en Nicaragua",
+  "main": "backend/server.js",
+  "scripts": {
+    "dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "backend:dev": "cd backend && npm run dev",
+    "frontend:dev": "cd frontend && npm start",
+    "build": "cd frontend && npm run build",
+    "start": "cd backend && npm start",
+    "migrate": "cd backend && npm run migrate",
+    "seed": "cd backend && npm run seed",
+    "test": "concurrently \"npm run backend:test\" \"npm run frontend:test\"",
+    "backend:test": "cd backend && npm test",
+    "frontend:test": "cd frontend && npm test",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
+  },
+  "keywords": [
+    "agricultura",
+    "fitosanitario",
+    "frijol",
+    "ia",
+    "nicaragua",
+    "plagas",
+    "control-biologico"
+  ],
+  "author": "Luis Enrique Albares Soriano",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^7.6.0"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}

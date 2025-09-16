@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgis/postgis:15-3.3
+    container_name: frijolai_db
+    environment:
+      POSTGRES_DB: frijolai_db
+      POSTGRES_USER: frijolai_user
+      POSTGRES_PASSWORD: frijolai_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - frijolai_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: frijolai_backend
+    environment:
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: frijolai_db
+      DB_USER: frijolai_user
+      DB_PASSWORD: frijolai_password
+      JWT_SECRET: your_super_secret_jwt_key_change_in_production
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      - postgres
+    networks:
+      - frijolai_network
+    command: npm run dev
+
+  # Frontend React App
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frijolai_frontend
+    environment:
+      VITE_API_BASE_URL: http://localhost:3001/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - frijolai_network
+    command: npm run dev
+
+  # AI Service (Python)
+  ai-service:
+    build:
+      context: ./ai-service
+      dockerfile: Dockerfile
+    container_name: frijolai_ai
+    environment:
+      MODEL_PATH: /app/models
+      API_PORT: 8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ai-service:/app
+      - ai_models:/app/models
+    networks:
+      - frijolai_network
+
+  # Redis (for caching and session management)
+  redis:
+    image: redis:7-alpine
+    container_name: frijolai_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - frijolai_network
+
+volumes:
+  postgres_data:
+  redis_data:
+  ai_models:
+
+networks:
+  frijolai_network:
+    driver: bridge
